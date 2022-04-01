@@ -17,8 +17,8 @@ services:
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: test123
-            MYSQL_DATABASE: prosamed
-            MYSQL_USER: prosamed
+            MYSQL_DATABASE: phpcomments
+            MYSQL_USER: phpuser
             MYSQL_PASSWORD: test456
         ports:
             - "9906:3306"
