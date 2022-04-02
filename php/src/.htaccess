@@ -1,0 +1,7 @@
+DirectoryIndex views/index.html
+RewriteEngine on
+RewriteCond %{REQUEST_URI} ^/comments.*
+RewriteRule ^(.*)$ /API.php [NC,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /views/$1 [PT,NC,L]

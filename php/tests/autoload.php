@@ -6,15 +6,17 @@ spl_autoload_register(function ($className) {
         return;
     }
 
-    $classFolders = ['controllers', 'model'];
+    $classFolders = ['src' . DIRECTORY_SEPARATOR . 'controllers',
+        'src' . DIRECTORY_SEPARATOR . 'model',
+        'tests' . DIRECTORY_SEPARATOR . 'controllers',
+        'tests' . DIRECTORY_SEPARATOR . 'model'];
 
     $included = false;
     foreach ($classFolders as &$classFolder) {
-        if (!$included)
-        {
+        if (!$included) {
             $path = sprintf('%1$s%2$s%3$s.php',
                 // %1$s: get absolute path of src folder
-                realpath(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.$classFolder),
+                realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $classFolder),
                 // %2$s: / or \ (depending on OS)
                 DIRECTORY_SEPARATOR,
                 // replace _ by / or \ (depending on OS)
@@ -37,8 +39,10 @@ spl_autoload_register(function ($className) {
 
 });
 
-function startsWith( $value, $prefix ) {
-    $length = strlen( $prefix );
-    return substr( $value, 0, $length ) === $prefix;
+function startsWith($value, $prefix)
+{
+    $length = strlen($prefix);
+    return substr($value, 0, $length) === $prefix;
 }
+
 ?>
