@@ -1,52 +1,82 @@
 <?php declare(strict_types=1);
 
-class CommentsController
-{
-    private $db;
-    private $requestMethod;
-    private $uriParts;
+require_once __DIR__ . '/../services/CommentsService.php';
+require 'ApiResponse.php';
 
-    public function __construct($db, $requestMethod, $uriParts)
+final class CommentsController
+{
+    private $commentsService;
+
+    public function __construct($dbConnection)
     {
-        $this->db = $db;
-        $this->requestMethod = $requestMethod;
-        $this->uriParts = $uriParts;
+        $this->commentsService = new CommentsService($dbConnection);
     }
 
-    public function processRequest(): array
+    public function processRequest(ApiRequest $request): ApiResponse
     {
-        switch ($this->requestMethod) {
+        switch ($request->getRequestMethod()) {
             case 'GET':
-                if (isset($this->uriParts[2])) {
-                    $response = $this->notFoundResponse();
+                $id = $request->getId();
+                if ($id !== null) {
+                    $response = $this->findById($id);
+                } else {
+                    $response = $this->findAll();
+                }
+                break;
+            case 'POST':
+                $response = $this->notFoundResponse();
+                break;
+            case 'PUT':
+                $response = $this->notFoundResponse();
+                break;
+            case 'DELETE':
+                $id = $request->getId();
+                if ($id !== null) {
+                    $response = $this->findById($id);
                 } else {
                     $response = $this->notFoundResponse();
                 }
                 break;
-            case 'POST':
-                $requestBody = file_get_contents('php://input');
-                $response = $this->notFoundResponse();
-                break;
-            case 'PUT':
-                $requestBody = file_get_contents('php://input');
-                $response = $this->notFoundResponse();
-                break;
-            case 'DELETE':
-                $response = $this->notFoundResponse();
-                break;
             default:
-                $response = $this->notFoundResponse();
+                $response = $this->methodNotAllowedResponse();
                 break;
         }
 
         return $response;
     }
 
-    private function notFoundResponse(): array
+    private function findById($id): ApiResponse
     {
-        $response['header'] = array('status' => 'HTTP/1.1 404 Not Found');
-        $response['body'] = null;
-        return $response;
+        try
+        {
+            $comment = $this->commentsService->findById(intval($id));
+            return new ApiResponse(ApiResponse::STATUS_OK, null, $comment);
+        } catch (Exception $e)
+        {
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function findAll(): ApiResponse
+    {
+        try
+        {
+            $comments = $this->commentsService->findAll();
+            return new ApiResponse(ApiResponse::STATUS_OK, null, $comments);
+        } catch (Exception $e)
+        {
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function methodNotAllowedResponse(): ApiResponse
+    {
+        return new ApiResponse(ApiResponse::STATUS_METHOD_NOT_ALLOWED);
+    }
+
+    private function notFoundResponse(): ApiResponse
+    {
+        return new ApiResponse(ApiResponse::STATUS_NOT_FOUND);
     }
 
 }

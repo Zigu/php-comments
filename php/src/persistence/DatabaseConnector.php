@@ -35,11 +35,11 @@ final class DatabaseConnector
                    text TEXT,
                    author VARCHAR(60) NOT NULL,
                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)';
+                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);';
         $statement = $this->dbConnection->prepare($sql);
         if (!$statement->execute())
         {
-            echo 'migration was not successful';
+            exit('Creation of comments table was not successful.');
         }
     }
 }

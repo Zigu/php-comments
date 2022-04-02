@@ -1,14 +1,39 @@
 <?php declare(strict_types=1);
 
-class ResponseRenderer
+final class ResponseRenderer
 {
-    public function renderHeader($value): void
+    private function __construct()
+    {
+        // this utils class only provides static methods.
+    }
+    public static function render(ApiResponse $response): void
+    {
+        self::renderStatus($response->getStatus());
+        if ($response->getHeaders !== null)
+        {
+            foreach($response->getHeaders() as $header)
+            {
+                self::renderHeader($header);
+            }
+        }
+
+        if ($response->getBody() !== null)
+        {
+            self::renderBody($response->getBody());
+        }
+    }
+
+    private static function renderStatus($status): void
+    {
+        http_response_code($status);
+    }
+    private static function renderHeader($value): void
     {
         header($value);
     }
 
-    public function renderBody($value): void
+    private static function renderBody($value): void
     {
-        echo $value;
+        echo json_encode($value);
     }
 }

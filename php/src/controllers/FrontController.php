@@ -6,44 +6,40 @@ require_once 'ResponseRenderer.php';
 final class FrontController
 {
     private $dbConnection;
-    private $renderer;
 
-    public function __construct($dbConnection, $renderer)
+    public function __construct($dbConnection)
     {
         $this->dbConnection = $dbConnection;
-        $this->renderer = $renderer;
     }
 
-    public function processRequest($requestMethod, $uriParts): void
+    public function processRequest(ApiRequest $request): ApiResponse
     {
-        if (!isset($uriParts[1])) {
-            // No resource mentioned in URL
-            $this->renderer->renderHeader("HTTP/1.1 404 Not Found");
-            exit();
+        if (!$request->hasResourceName()) {
+            return new ApiResponse(ApiResponse::STATUS_NOT_FOUND);
         }
 
-        if ('OPTIONS' === $requestMethod) {
+        if ('OPTIONS' === $request->getRequestMethod()) {
             // Allow remote AJAX calls
-            $this->renderer->renderHeader("Access-Control-Allow-Origin: *");
-            $this->renderer->renderHeader("Content-Type: application/json; charset=UTF-8");
-            $this->renderer->renderHeader("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
-            $this->renderer->renderHeader("Access-Control-Max-Age: 3600");
-            $this->renderer->renderHeader("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-            exit();
+            $headers = [
+                "Access-Control-Allow-Origin: *",
+                "Content-Type: application/json; charset=UTF-8",
+                "Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE",
+                "Access-Control-Max-Age: 3600",
+                "Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With"
+                ];
+            return new ApiResponse(ApiResponse::STATUS_OK, $headers);
         }
 
-        switch ($uriParts[1]) {
+        $apiResponse = null;
+        switch ($request->getResourceName()) {
             case 'comments':
-                $controller = new CommentsController($this->dbConnection, $requestMethod, $uriParts);
-                $response = $controller->processRequest();
-                $this->renderer->renderHeader($response['header']['status']);
-                if ($response['body']) {
-                    $this->renderer->renderBody($response['body']);
-                }
+                $controller = new CommentsController($this->dbConnection);
+                $apiResponse = $controller->processRequest($request);
                 break;
             default:
                 // No supported resource mentioned in URL
-                $this->renderer->renderHeader("HTTP/1.1 404 Not Found");
+                $apiResponse = new ApiResponse(ApiResponse::STATUS_NOT_FOUND);
         }
+        return $apiResponse;
     }
 }

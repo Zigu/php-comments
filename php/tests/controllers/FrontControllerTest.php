@@ -4,80 +4,88 @@ use PHPUnit\Framework\TestCase;
 
 final class FrontControllerTest extends TestCase
 {
-    const NOT_FOUND_STATUS = 'HTTP/1.1 404 Not Found';
-
     public function testMissingUriPart(): void
     {
-        $renderer = $this->getMockBuilder(ResponseRenderer::class)
-            ->setMethods(['renderHeader', 'renderBody'])
-            ->getMock();
-
-        $renderer->expects($this->once())->method('renderHeader')->with($this->equalTo(self::NOT_FOUND_STATUS));
-        $renderer->expects($this->never())->method('renderBody');
-
         $dbConnection = null;
-        $uri = '/';
-        $uriParts = explode('/', $uri);
 
-        $frontController = new FrontController($dbConnection, $renderer);
-        $frontController->processRequest('GET', $uriParts);
+        $request = new ApiRequest('GET', '/');
+
+        $frontController = new FrontController($dbConnection);
+        $apiResponse = $frontController->processRequest($request);
+
+        $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $apiResponse->getStatus());
+        $this->assertNull($apiResponse->getBody());
+        $this->assertNull($apiResponse->getHeaders());
     }
 
     public function testInvalidUriPart(): void
     {
-        $renderer = $this->getMockBuilder(ResponseRenderer::class)
-            ->setMethods(['renderHeader', 'renderBody'])
-            ->getMock();
-
-        $renderer->expects($this->once())->method('renderHeader')->with($this->equalTo(self::NOT_FOUND_STATUS));
-        $renderer->expects($this->never())->method('renderBody');
-
         $dbConnection = null;
-        $uri = '/unknown';
-        $uriParts = explode('/', $uri);
+        $request = new ApiRequest('GET', '/unknown');
 
-        $frontController = new FrontController($dbConnection, $renderer);
-        $frontController->processRequest('GET', $uriParts);
+        $frontController = new FrontController($dbConnection);
+        $apiResponse = $frontController->processRequest($request);
+
+        $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $apiResponse->getStatus());
+        $this->assertNull($apiResponse->getBody());
+        $this->assertNull($apiResponse->getHeaders());
     }
 
     public function testCommentsUriPart(): void
     {
-        $renderer = $this->getMockBuilder(ResponseRenderer::class)
-            ->setMethods(['renderHeader', 'renderBody'])
-            ->getMock();
+        $dbConnection = $this->getMockedPDO([]);
 
-        $renderer->expects($this->once())->method('renderHeader')->with($this->equalTo(self::NOT_FOUND_STATUS));
-        $renderer->expects($this->never())->method('renderBody');
+        $request = new ApiRequest('GET', '/comments');
 
-        $dbConnection = null;
-        $uri = '/comments';
-        $uriParts = explode('/', $uri);
+        $frontController = new FrontController($dbConnection);
+        $apiResponse = $frontController->processRequest($request);
 
-        $frontController = new FrontController($dbConnection, $renderer);
-        $frontController->processRequest('GET', $uriParts);
+        $this->assertSame(ApiResponse::STATUS_OK, $apiResponse->getStatus());
+        $this->assertSame([], $apiResponse->getBody());
+        $this->assertNull($apiResponse->getHeaders());
     }
 
     public function testOptionRequest(): void
     {
-        $renderer = $this->getMockBuilder(ResponseRenderer::class)
-            ->setMethods(['renderHeader', 'renderBody'])
+        $dbConnection = null;
+
+        $request = new ApiRequest('OPTIONS', '/comments');
+
+        $frontController = new FrontController($dbConnection);
+        $apiResponse = $frontController->processRequest($request);
+
+        $expectedHeaders = [
+            'Access-Control-Allow-Origin: *',
+            'Content-Type: application/json; charset=UTF-8',
+            'Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE',
+            'Access-Control-Max-Age: 3600',
+            'Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With'
+        ];
+
+        $this->assertSame(ApiResponse::STATUS_OK, $apiResponse->getStatus());
+        $this->assertSame($expectedHeaders, $apiResponse->getHeaders());
+        $this->assertNull($apiResponse->getBody());
+    }
+
+    private function getMockedPDO($fetchAllResult): object
+    {
+        $query = $this->getMockBuilder(PDOStatement::class)
+            ->disableOriginalConstructor()
+            ->disableOriginalClone()
+            ->disableArgumentCloning()
+            ->disallowMockingUnknownTypes()
             ->getMock();
 
-        $renderer->expects($this->exactly(5))->method('renderHeader')
-            ->withConsecutive(
-                [$this->equalTo('Access-Control-Allow-Origin: *')],
-                [$this->equalTo('Content-Type: application/json; charset=UTF-8')],
-                [$this->equalTo('Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE')],
-                [$this->equalTo('Access-Control-Max-Age: 3600')],
-                [$this->equalTo('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With')]);
+        $query->method('fetchAll')->willReturn($fetchAllResult);
 
-        $renderer->expects($this->never())->method('renderBody');
+        $db = $this->getMockBuilder(PDO::class)
+            ->disableOriginalConstructor()
+            ->disableOriginalClone()
+            ->disableArgumentCloning()
+            ->disallowMockingUnknownTypes()
+            ->getMock();
 
-        $dbConnection = null;
-        $uri = '/comments';
-        $uriParts = explode('/', $uri);
-
-        $frontController = new FrontController($dbConnection, $renderer);
-        $frontController->processRequest('OPTIONS', $uriParts);
+        $db->method('query')->willReturn($query);
+        return $db;
     }
 }
