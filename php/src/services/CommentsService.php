@@ -11,34 +11,63 @@ final class CommentsService
         $this->dbConnection = $dbConnection;
     }
 
+
     public function findAll(): array
     {
-        $statement = "SELECT id, text, author, created_at, updated_at FROM comments;";
+        $statement = "SELECT id, text, author, created_at, updated_at FROM comments ORDER BY updated_at DESC;";
         $query = $this->dbConnection->query($statement);
-        return $query->fetchAll(PDO::FETCH_CLASS, Comment::class);
+        $rows = $query->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($rows as $row)
+        {
+            $result[] = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
+        }
+        return $result;
     }
 
-    public function findById(int $id): Comment
+    public function findById(int $id): ?Comment
     {
         $statement = "SELECT id, text, author, created_at, updated_at FROM comments WHERE id=:id;";
 
         $preparedStatement = $this->dbConnection->prepare($statement);
         $preparedStatement->bindParam('id', $id, PDO::PARAM_INT);
-        return $preparedStatement->fetchObject(Comment::class);
+        $preparedStatement->execute();
+        $row = $preparedStatement->fetch(PDO::FETCH_ASSOC);
+        return !$row ? null : Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
     }
 
-    public function insert(Array $input): int
+    public function deleteById(int $id): void
     {
-        $statement = "INSERT INTO comments (text, author, created_at) VALUES (:text, :author, :createdAt) OUTPUT INSERTED.id VALUES (?);";
-        $preparedStatement = $this->db->prepare($statement);
+        $statement = "DELETE FROM comments WHERE id=:id;";
+
+        $preparedStatement = $this->dbConnection->prepare($statement);
+        $preparedStatement->bindParam('id', $id, PDO::PARAM_INT);
+        $preparedStatement->execute();
+    }
+
+    public function insert(Array $input): string
+    {
+        $statement = "INSERT INTO comments (text, author) VALUES (:text, :author);";
+        $preparedStatement = $this->dbConnection->prepare($statement);
 
         $preparedStatement->bindParam('text', $input['text'], PDO::PARAM_STR);
         $preparedStatement->bindParam('author', $input['author'], PDO::PARAM_STR);
-        $preparedStatement->bindParam('createdAt', time(), PDO::PARAM_INT);
 
         $preparedStatement->execute();
 
-        $createdId = $preparedStatement->fetch(PDO::FETCH_ASSOC);
-        return $createdId['id'];
+        return $this->dbConnection->lastInsertId();
+    }
+
+    public function update(int $id, Array $input): void
+    {
+        $statement = "UPDATE comments SET text=:text, author=:author, updated_at=:updatedAt WHERE id=:id;";
+        $preparedStatement = $this->dbConnection->prepare($statement);
+
+        $preparedStatement->bindParam('text', $input['text'], PDO::PARAM_STR);
+        $preparedStatement->bindParam('author', $input['author'], PDO::PARAM_STR);
+        $preparedStatement->bindParam('updatedAt', date('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $preparedStatement->bindParam('id', $id, PDO::PARAM_INT);
+
+        $preparedStatement->execute();
     }
 }

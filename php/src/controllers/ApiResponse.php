@@ -3,9 +3,12 @@
 final class ApiResponse
 {
     public const STATUS_OK = 200;
+    public const STATUS_NO_CONTENT = 204;
     public const STATUS_NOT_FOUND = 404;
     public const STATUS_METHOD_NOT_ALLOWED = 405;
     public const STATUS_SERVER_ERROR = 500;
+    public const STATUS_BAD_REQUEST = 400;
+
 
     private $status;
     private $body;

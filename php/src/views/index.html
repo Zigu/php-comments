@@ -1,11 +1,57 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Comments</title>
-  </head>
-  <body>
-    <p>Hello there, this is a PHP Apache container</p>
-  </body>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/pure-min.css" integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
+    <style>
+        .create-comment-link {
+            padding: 1em;
+        }
+        .comment {
+            border: 1px solid #ccc;
+            padding: 1em;
+            margin: 1em;
+        }
+
+        .comment .text {
+            font-family: sans-serif;
+        }
+
+        .comment .meta {
+            font-family: sans-serif;
+            font-size: smaller;
+            border-top: 1px dashed #ccc;
+            margin-top: 2em;
+        }
+
+        .comment .actions {
+            font-family: sans-serif;
+            margin-top: 1em;
+        }
+
+        .commentForm {
+            font-family: sans-serif;
+            border: 1px solid #ccc;
+            padding: 1em;
+            margin: 1em;
+        }
+
+        .commentForm .actions {
+            display: block;
+            margin-bottom: 0.6em;
+        }
+
+        .commentForm .actions *, .comments-list .actions * {
+            display: inline-block;
+            margin-right: 0.6em;
+            margin-top: 0.6em;
+        }
+    </style>
+</head>
+<body>
+<script src="https://unpkg.com/mithril/mithril.js"></script>
+<script src="app.js"></script>
+</body>
 </html>

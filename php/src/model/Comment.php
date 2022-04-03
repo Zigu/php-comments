@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-final class Comment
+final class Comment implements JsonSerializable
 {
     private $id;
     private $text;
@@ -8,14 +8,22 @@ final class Comment
     private $createdAt;
     private $updatedAt;
 
-    public function __construct(int $id, string $text, string $author, $createdAt, $updatedAt)
+    public static function newInstance(int $id, string $text, string $author, $createdAt, $updatedAt): Comment
     {
-        $this->id = $id;
-        $this->text = $text;
-        $this->author = $author;
-        $this->createdAt = $createdAt;
-        $this->updatedAt = $updatedAt;
+        $comment = new Comment();
+        $comment->setId($id);
+        $comment->setText($text);
+        $comment->setAuthor($author);
+        $comment->setCreatedAt($createdAt);
+        $comment->setUpdatedAt($updatedAt);
+        return $comment;
     }
+
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
+    }
+
 
     /**
      * @return int
@@ -96,8 +104,6 @@ final class Comment
     {
         $this->updatedAt = $updatedAt;
     }
-
-
 
     public function __toString(): string
     {

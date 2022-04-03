@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CommentsControllerTest extends TestCase
 {
-    private const BASE_URI = 'comments';
+    private const BASE_URI = '/comments';
 
     public function testUnknownRequestMethod(): void
     {
@@ -32,7 +32,7 @@ final class CommentsControllerTest extends TestCase
         $response = $controller->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
-        $this->assertSame($comments ,$response->getBody());
+        $this->assertSame($comments, $response->getBody());
     }
 
     public function testGetCommentsWithException(): void
@@ -51,35 +51,41 @@ final class CommentsControllerTest extends TestCase
 
     public function testGetComment(): void
     {
-        $comment = new Comment(1, 'phpunit text', 'phpunit author', time(), time());
-        $dbConnection = $this->getFindByIdPDO($comment);
+        $row = $this->expectedRow('1');
+        $pdo = $this->getFindByIdPDO($row);
 
-        $controller = new CommentsController($dbConnection);
+        $controller = new CommentsController($pdo['dbConnection']);
 
-        $request = new ApiRequest('GET', self::BASE_URI.'/1');
+        $request = new ApiRequest('GET', self::BASE_URI . '/1');
 
         $response = $controller->processRequest($request);
 
-        $this->assertSame($comment, $response->getBody());
+        $expectedComment = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
+        $this->assertEquals($expectedComment, $response->getBody());
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
     }
 
     public function testCreateComment(): void
     {
-        $dbConnection = $this->getInsertPDO(1);
+        $row = $this->expectedRow('1');
+
+        $dbConnection = $this->getInsertPDO(1, $row);
 
         $controller = new CommentsController($dbConnection);
 
-        $request = new MockApiRequest('POST', self::BASE_URI, '');
+        $input = ['text' => 'phpunit text', 'author' => 'phpunit author'];
+
+        $request = new MockApiRequest('POST', self::BASE_URI, json_encode($input));
 
         $response = $controller->processRequest($request);
 
+        $expectedComment = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
 
-        //$this->assertSame($comment ,$response['body']);
-        $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $response->getStatus());
+        $this->assertEquals($expectedComment, $response->getBody());
+        $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
     }
 
-    private function getInsertPDO($resultId): object
+    private function getInsertPDO($resultId, $row): object
     {
         $query = $this->getMockBuilder(PDOStatement::class)
             ->disableOriginalConstructor()
@@ -88,7 +94,7 @@ final class CommentsControllerTest extends TestCase
             ->disallowMockingUnknownTypes()
             ->getMock();
 
-        $query->method('fetch')->willReturn($resultId);
+        $query->method('fetch')->willReturn($row);
 
         $db = $this->getMockBuilder(PDO::class)
             ->disableOriginalConstructor()
@@ -98,6 +104,7 @@ final class CommentsControllerTest extends TestCase
             ->getMock();
 
         $db->method('prepare')->willReturn($query);
+        $db->method('lastInsertId')->willReturn(strval($resultId));
         return $db;
     }
 
@@ -123,7 +130,7 @@ final class CommentsControllerTest extends TestCase
         return $db;
     }
 
-    private function getFindByIdPDO($result): object
+    private function getFindByIdPDO($result): array
     {
         $query = $this->getMockBuilder(PDOStatement::class)
             ->disableOriginalConstructor()
@@ -132,7 +139,7 @@ final class CommentsControllerTest extends TestCase
             ->disallowMockingUnknownTypes()
             ->getMock();
 
-        $query->method('fetchObject')->willReturn($result);
+        $query->method('fetch')->willReturn($result);
 
         $db = $this->getMockBuilder(PDO::class)
             ->disableOriginalConstructor()
@@ -142,7 +149,7 @@ final class CommentsControllerTest extends TestCase
             ->getMock();
 
         $db->method('prepare')->willReturn($query);
-        return $db;
+        return ['dbConnection' => $db, 'query' => $query];
     }
 
     private function getFindAllPDOFailingAtFetchAll(): object
@@ -165,5 +172,10 @@ final class CommentsControllerTest extends TestCase
 
         $db->method('query')->willReturn($query);
         return $db;
+    }
+
+    private function expectedRow($id): array
+    {
+        return ['id' => $id, 'text' => 'phpunit text', 'author' => 'phpunit author', 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')];
     }
 }
