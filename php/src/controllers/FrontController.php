@@ -30,7 +30,6 @@ final class FrontController
             return new ApiResponse(ApiResponse::STATUS_OK, $headers);
         }
 
-        $apiResponse = null;
         switch ($request->getResourceName()) {
             case 'comments':
                 $controller = new CommentsController($this->dbConnection);

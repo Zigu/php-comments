@@ -19,7 +19,7 @@ final class ApiRequestTest extends TestCase
         $request2 = new ApiRequest('GET', self::SAMPLE_URI.'/5');
 
         $this->assertNull($request1->getId());
-        $this->assertSame('5', $request2->getId());
+        $this->assertEquals(5, $request2->getId());
     }
 
     public function testGetResourceName(): void

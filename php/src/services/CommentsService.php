@@ -58,14 +58,14 @@ final class CommentsService
         return $this->dbConnection->lastInsertId();
     }
 
-    public function update(int $id, Array $input): void
+    public function update(int $id, Array $input, $updateDate): void
     {
         $statement = "UPDATE comments SET text=:text, author=:author, updated_at=:updatedAt WHERE id=:id;";
         $preparedStatement = $this->dbConnection->prepare($statement);
 
         $preparedStatement->bindParam('text', $input['text'], PDO::PARAM_STR);
         $preparedStatement->bindParam('author', $input['author'], PDO::PARAM_STR);
-        $preparedStatement->bindParam('updatedAt', date('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $preparedStatement->bindParam('updatedAt', $updateDate, PDO::PARAM_STR);
         $preparedStatement->bindParam('id', $id, PDO::PARAM_INT);
 
         $preparedStatement->execute();

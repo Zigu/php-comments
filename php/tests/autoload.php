@@ -8,8 +8,11 @@ spl_autoload_register(function ($className) {
 
     $classFolders = ['src' . DIRECTORY_SEPARATOR . 'controllers',
         'src' . DIRECTORY_SEPARATOR . 'model',
+        'src' . DIRECTORY_SEPARATOR . 'services',
+        'src' . DIRECTORY_SEPARATOR . 'persistence',
         'tests' . DIRECTORY_SEPARATOR . 'controllers',
-        'tests' . DIRECTORY_SEPARATOR . 'model'];
+        'tests' . DIRECTORY_SEPARATOR . 'model',
+        'tests' . DIRECTORY_SEPARATOR . 'services',];
 
     $included = false;
     foreach ($classFolders as &$classFolder) {

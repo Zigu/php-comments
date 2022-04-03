@@ -22,10 +22,10 @@ class ApiRequest
         return $this->getUriParts()[1];
     }
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         $uriParts = $this->getUriParts();
-        return sizeof($uriParts) == 3 ? $uriParts[2] : null;
+        return sizeof($uriParts) == 3 && filter_var($uriParts[2], FILTER_VALIDATE_INT) ? intval($uriParts[2]) : null;
     }
 
     public function getRequestMethod(): string

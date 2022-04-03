@@ -2,6 +2,7 @@
 
 final class DatabaseConnector
 {
+    public const DATE_FORMAT = 'Y-m-d H:i:s';
 
     private $dbConnection = null;
 

@@ -50,7 +50,7 @@ final class CommentsController
         return $response;
     }
 
-    private function update(string $id, string $requestBody): ApiResponse
+    private function update(int $id, string $requestBody): ApiResponse
     {
         try
         {
@@ -62,7 +62,7 @@ final class CommentsController
                 return new ApiResponse(ApiResponse::STATUS_BAD_REQUEST, null, ['fieldErrors' => $fieldErrors]);
             }
 
-            $this->commentsService->update(intval($id), $input);
+            $this->commentsService->update($id, $input, date(DatabaseConnector::DATE_FORMAT));
             return $this->findById($id);
         } catch (Exception $e)
         {
@@ -83,7 +83,7 @@ final class CommentsController
             }
 
             $commentId = $this->commentsService->insert($input);
-            return $this->findById($commentId);
+            return $this->findById(intval($commentId));
         } catch (Exception $e)
         {
             return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
@@ -106,11 +106,11 @@ final class CommentsController
         return $input;
     }
 
-    private function deleteById(string $id): ApiResponse
+    private function deleteById(int $id): ApiResponse
     {
         try
         {
-            $this->commentsService->deleteById(intval($id));
+            $this->commentsService->deleteById($id);
             return new ApiResponse(ApiResponse::STATUS_NO_CONTENT, null, null);
         } catch (Exception $e)
         {
@@ -118,11 +118,11 @@ final class CommentsController
         }
     }
 
-    private function findById(string $id): ApiResponse
+    private function findById(int $id): ApiResponse
     {
         try
         {
-            $comment = $this->commentsService->findById(intval($id));
+            $comment = $this->commentsService->findById($id);
             return new ApiResponse(ApiResponse::STATUS_OK, null, $comment);
         } catch (Exception $e)
         {
