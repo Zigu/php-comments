@@ -4,11 +4,13 @@
 
 This project is a sample application for a CRUD API managing simple comments.
 
-It uses a MySQL-8 database and PHP 7.1. All production files are located in
-`php/src`, all test files in `php/tests`.
+It uses a MySQL-8 database and PHP 7.1 running on an Apache webserver. All production 
+files are located in `php/src`, all test files in `php/tests`.
 
 The web application provides an API callable via `/comments` and a simple web view
-available at `/` when using your browser.
+available at `/` when using your browser. 
+This is done by using an `.htaccess` file located in the webapps directory and having a
+rewrite module (`mod_rewrite`) enabled.
 
 ### API calls with curl and using docker-compose
 
@@ -39,8 +41,10 @@ export DB_HOST=<your db host>
 export DB_PORT=<your db port>
 export DB_USERNAME=<your user with permissions to access DB>
 export DB_PASSWORD=<db user password>
-```
+``` 
 - copy all files located in `php/src` to your webapps folder (e.g. /var/www/html/ on Apache)
+- ensure that your webserver provides URL rewriting (e.g. enable `mod_rewrite` on Apache) and 
+respects the `.htaccess` file provided in the webapps folder
 - for web view, open browser http://\<your webapp\>
 - for calling the API directly (e.g. via curl), use http://\<your webapp\>/comments
 
