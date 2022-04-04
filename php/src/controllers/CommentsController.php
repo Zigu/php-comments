@@ -24,7 +24,13 @@ final class CommentsController
                 }
                 break;
             case 'POST':
-                $response = $this->insert($request->getRequestBody());
+                $id = $request->getId();
+                if ($id !== null) {
+                    $response = $this->methodNotAllowedResponse();
+                } else {
+                    $response = $this->insert($request->getRequestBody());
+                }
+
                 break;
             case 'PUT':
                 $id = $request->getId();
@@ -59,14 +65,14 @@ final class CommentsController
 
             if (!empty($fieldErrors))
             {
-                return new ApiResponse(ApiResponse::STATUS_BAD_REQUEST, null, ['fieldErrors' => $fieldErrors]);
+                return new ApiResponse(ApiResponse::STATUS_BAD_REQUEST, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['fieldErrors' => $fieldErrors]);
             }
 
             $this->commentsService->update($id, $input, date(DatabaseConnector::DATE_FORMAT));
             return $this->findById($id);
         } catch (Exception $e)
         {
-            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['error' => $e->getMessage()]);
         }
     }
 
@@ -79,14 +85,14 @@ final class CommentsController
 
             if (!empty($fieldErrors))
             {
-                return new ApiResponse(ApiResponse::STATUS_BAD_REQUEST, null, ['fieldErrors' => $fieldErrors]);
+                return new ApiResponse(ApiResponse::STATUS_BAD_REQUEST, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['fieldErrors' => $fieldErrors]);
             }
 
             $commentId = $this->commentsService->insert($input);
             return $this->findById(intval($commentId));
         } catch (Exception $e)
         {
-            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['error' => $e->getMessage()]);
         }
     }
 
@@ -114,7 +120,7 @@ final class CommentsController
             return new ApiResponse(ApiResponse::STATUS_NO_CONTENT, null, null);
         } catch (Exception $e)
         {
-            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['error' => $e->getMessage()]);
         }
     }
 
@@ -123,10 +129,10 @@ final class CommentsController
         try
         {
             $comment = $this->commentsService->findById($id);
-            return new ApiResponse(ApiResponse::STATUS_OK, null, $comment);
+            return new ApiResponse(ApiResponse::STATUS_OK, [ApiResponse::HEADER_CONTENT_TYPE_JSON], $comment);
         } catch (Exception $e)
         {
-            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['error' => $e->getMessage()]);
         }
     }
 
@@ -135,10 +141,10 @@ final class CommentsController
         try
         {
             $comments = $this->commentsService->findAll();
-            return new ApiResponse(ApiResponse::STATUS_OK, null, $comments);
+            return new ApiResponse(ApiResponse::STATUS_OK, [ApiResponse::HEADER_CONTENT_TYPE_JSON], $comments);
         } catch (Exception $e)
         {
-            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, null, ['error' => $e->getMessage()]);
+            return new ApiResponse(ApiResponse::STATUS_SERVER_ERROR, [ApiResponse::HEADER_CONTENT_TYPE_JSON], ['error' => $e->getMessage()]);
         }
     }
 

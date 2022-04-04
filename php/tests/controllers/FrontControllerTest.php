@@ -41,8 +41,8 @@ final class FrontControllerTest extends TestCase
         $apiResponse = $frontController->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_OK, $apiResponse->getStatus());
-        $this->assertSame([], $apiResponse->getBody());
-        $this->assertNull($apiResponse->getHeaders());
+        $this->assertEquals([], $apiResponse->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $apiResponse->getHeaders());
     }
 
     public function testOptionRequest(): void

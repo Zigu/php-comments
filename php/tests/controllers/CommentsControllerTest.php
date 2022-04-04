@@ -32,7 +32,8 @@ final class CommentsControllerTest extends TestCase
         $response = $controller->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
-        $this->assertSame($comments, $response->getBody());
+        $this->assertEquals($comments, $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testGetCommentsWithException(): void
@@ -47,12 +48,13 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_SERVER_ERROR, $response->getStatus());
         $this->assertSame(['error' => 'phpunit'], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testGetComment(): void
     {
-        $row = $this->expectedRow('1');
-        $dbConnection = $this->getFindByIdPDO($row);
+        $expectedComment = $this->expectedComment(1);
+        $dbConnection = $this->getFindByIdPDO($expectedComment);
 
         $controller = new CommentsController($dbConnection);
 
@@ -60,9 +62,9 @@ final class CommentsControllerTest extends TestCase
 
         $response = $controller->processRequest($request);
 
-        $expectedComment = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
         $this->assertEquals($expectedComment, $response->getBody());
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testGetCommentWithException(): void
@@ -77,13 +79,14 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_SERVER_ERROR, $response->getStatus());
         $this->assertSame(['error' => 'phpunit'], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testCreateComment(): void
     {
-        $row = $this->expectedRow('1');
+        $expectedComment = $this->expectedComment(1);
 
-        $dbConnection = $this->getInsertPDO(1, $row);
+        $dbConnection = $this->getInsertPDO(1, $expectedComment);
 
         $controller = new CommentsController($dbConnection);
 
@@ -93,10 +96,9 @@ final class CommentsControllerTest extends TestCase
 
         $response = $controller->processRequest($request);
 
-        $expectedComment = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
-
         $this->assertEquals($expectedComment, $response->getBody());
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testCreateCommentWithException(): void
@@ -113,6 +115,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_SERVER_ERROR, $response->getStatus());
         $this->assertEquals(['error' => 'phpunit'], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testCreateCommentWithValidation(): void
@@ -129,13 +132,14 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_BAD_REQUEST, $response->getStatus());
         $this->assertEquals(['fieldErrors' => ['text' => 'Missing text', 'author' => 'Missing author name']], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testUpdateComment(): void
     {
-        $row = $this->expectedRow('1');
+        $expectedComment = $this->expectedComment(1);
 
-        $dbConnection = $this->getUpdatePDO($row);
+        $dbConnection = $this->getUpdatePDO($expectedComment);
 
         $controller = new CommentsController($dbConnection);
 
@@ -145,10 +149,9 @@ final class CommentsControllerTest extends TestCase
 
         $response = $controller->processRequest($request);
 
-        $expectedComment = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
-
         $this->assertEquals($expectedComment, $response->getBody());
         $this->assertSame(ApiResponse::STATUS_OK, $response->getStatus());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testUpdateCommentWithException(): void
@@ -165,6 +168,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_SERVER_ERROR, $response->getStatus());
         $this->assertEquals(['error' => 'phpunit'], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testUpdateCommentWithValidation(): void
@@ -181,6 +185,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_BAD_REQUEST, $response->getStatus());
         $this->assertEquals(['fieldErrors' => ['text' => 'Missing text', 'author' => 'Missing author name']], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     public function testUpdateCommentWithoutId(): void
@@ -197,6 +202,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $response->getStatus());
         $this->assertNull($response->getBody());
+        $this->assertNull($response->getHeaders());
     }
 
     public function testUpdateCommentWithoutWrongId(): void
@@ -213,6 +219,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $response->getStatus());
         $this->assertNull($response->getBody());
+        $this->assertNull($response->getHeaders());
     }
 
     public function testDeleteComment(): void
@@ -226,8 +233,8 @@ final class CommentsControllerTest extends TestCase
         $response = $controller->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_NO_CONTENT, $response->getStatus());
-
         $this->assertNull($response->getBody());
+        $this->assertNull($response->getHeaders());
     }
 
     public function testDeleteCommentWithoutId(): void
@@ -241,8 +248,8 @@ final class CommentsControllerTest extends TestCase
         $response = $controller->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $response->getStatus());
-
         $this->assertNull($response->getBody());
+        $this->assertNull($response->getHeaders());
     }
 
     public function testDeleteCommentWithInvalidId(): void
@@ -256,8 +263,8 @@ final class CommentsControllerTest extends TestCase
         $response = $controller->processRequest($request);
 
         $this->assertSame(ApiResponse::STATUS_NOT_FOUND, $response->getStatus());
-
         $this->assertNull($response->getBody());
+        $this->assertNull($response->getHeaders());
     }
 
     public function testDeleteCommentWithException(): void
@@ -272,6 +279,7 @@ final class CommentsControllerTest extends TestCase
 
         $this->assertSame(ApiResponse::STATUS_SERVER_ERROR, $response->getStatus());
         $this->assertEquals(['error' => 'phpunit'], $response->getBody());
+        $this->assertEquals([ApiResponse::HEADER_CONTENT_TYPE_JSON], $response->getHeaders());
     }
 
     private function getDeletePDO($exception=null): object
@@ -299,7 +307,7 @@ final class CommentsControllerTest extends TestCase
         return $db;
     }
 
-    private function getUpdatePDO($row, $exception=null): object
+    private function getUpdatePDO($result, $exception=null): object
     {
         $query = $this->getMockBuilder(PDOStatement::class)
             ->disableOriginalConstructor()
@@ -312,7 +320,7 @@ final class CommentsControllerTest extends TestCase
             $query->method('execute')->willThrowException($exception);
         }
 
-        $query->method('fetch')->willReturn($row);
+        $query->method('fetchObject')->willReturn($result);
 
 
         $db = $this->getMockBuilder(PDO::class)
@@ -327,7 +335,7 @@ final class CommentsControllerTest extends TestCase
     }
 
 
-    private function getInsertPDO($resultId, $row, $exception=null): object
+    private function getInsertPDO($resultId, $comment, $exception=null): object
     {
         $query = $this->getMockBuilder(PDOStatement::class)
             ->disableOriginalConstructor()
@@ -340,7 +348,7 @@ final class CommentsControllerTest extends TestCase
             $query->method('execute')->willThrowException($exception);
         }
 
-        $query->method('fetch')->willReturn($row);
+        $query->method('fetchObject')->willReturn($comment);
 
 
         $db = $this->getMockBuilder(PDO::class)
@@ -391,9 +399,9 @@ final class CommentsControllerTest extends TestCase
             ->getMock();
 
         if ($exception !== null) {
-            $query->method('fetch')->willThrowException($exception);
+            $query->method('fetchObject')->willThrowException($exception);
         } else {
-            $query->method('fetch')->willReturn($result);
+            $query->method('fetchObject')->willReturn($result);
         }
 
         $db = $this->getMockBuilder(PDO::class)
@@ -407,8 +415,8 @@ final class CommentsControllerTest extends TestCase
         return $db;
     }
 
-    private function expectedRow($id): array
+    private function expectedComment($id): object
     {
-        return ['id' => $id, 'text' => 'phpunit text', 'author' => 'phpunit author', 'created_at' => date(DatabaseConnector::DATE_FORMAT), 'updated_at' => date(DatabaseConnector::DATE_FORMAT)];
+        return Comment::newInstance($id, 'phpunit text', 'phpunit author', date(DatabaseConnector::DATE_FORMAT), date(DatabaseConnector::DATE_FORMAT));
     }
 }

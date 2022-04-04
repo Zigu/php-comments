@@ -14,11 +14,11 @@ final class CommentsServiceTest extends TestCase
             ->getMock();
 
         $query->method('fetchAll')
-            ->willReturn([$this->expectedRow('1')]);
+            ->willReturn([$this->expectedComment(1)]);
 
         $query->expects($this->once())
             ->method('fetchAll')
-            ->with($this->equalTo(PDO::FETCH_ASSOC));
+            ->with($this->equalTo(PDO::FETCH_CLASS), $this->equalTo(Comment::Class));
 
         $dbConnection = $this->getMockBuilder(PDO::class)
             ->disableOriginalConstructor()
@@ -31,7 +31,7 @@ final class CommentsServiceTest extends TestCase
 
         $dbConnection->expects($this->once())
             ->method('query')
-            ->with($this->equalTo('SELECT id, text, author, created_at, updated_at FROM comments ORDER BY updated_at DESC;'));
+            ->with($this->equalTo('SELECT id, text, author, created_at AS createdAt, updated_at AS updatedAt FROM comments ORDER BY updated_at DESC;'));
 
         $service = new CommentsService($dbConnection);
 
@@ -49,8 +49,8 @@ final class CommentsServiceTest extends TestCase
             ->disallowMockingUnknownTypes()
             ->getMock();
 
-        $preparedStatement->method('fetch')
-            ->willReturn($this->expectedRow('1'));
+        $preparedStatement->method('fetchObject')
+            ->willReturn($this->expectedComment(1));
 
         $preparedStatement->expects($this->once())
             ->method('bindParam')
@@ -60,8 +60,8 @@ final class CommentsServiceTest extends TestCase
             ->method('execute');
 
         $preparedStatement->expects($this->once())
-            ->method('fetch')
-            ->with($this->equalTo(PDO::FETCH_ASSOC));
+            ->method('fetchObject')
+            ->with($this->equalTo(Comment::class));
 
         $dbConnection = $this->getMockBuilder(PDO::class)
             ->disableOriginalConstructor()
@@ -74,7 +74,7 @@ final class CommentsServiceTest extends TestCase
 
         $dbConnection->expects($this->once())
             ->method('prepare')
-            ->with($this->equalTo('SELECT id, text, author, created_at, updated_at FROM comments WHERE id=:id;'));
+            ->with($this->equalTo('SELECT id, text, author, created_at AS createdAt, updated_at AS updatedAt FROM comments WHERE id=:id;'));
 
         $service = new CommentsService($dbConnection);
 
@@ -92,7 +92,7 @@ final class CommentsServiceTest extends TestCase
             ->disallowMockingUnknownTypes()
             ->getMock();
 
-        $preparedStatement->method('fetch')
+        $preparedStatement->method('fetchObject')
             ->willReturn(false);
 
         $preparedStatement->expects($this->once())
@@ -103,8 +103,8 @@ final class CommentsServiceTest extends TestCase
             ->method('execute');
 
         $preparedStatement->expects($this->once())
-            ->method('fetch')
-            ->with($this->equalTo(PDO::FETCH_ASSOC));
+            ->method('fetchObject')
+            ->with($this->equalTo(Comment::class));
 
         $dbConnection = $this->getMockBuilder(PDO::class)
             ->disableOriginalConstructor()
@@ -117,7 +117,7 @@ final class CommentsServiceTest extends TestCase
 
         $dbConnection->expects($this->once())
             ->method('prepare')
-            ->with($this->equalTo('SELECT id, text, author, created_at, updated_at FROM comments WHERE id=:id;'));
+            ->with($this->equalTo('SELECT id, text, author, created_at AS createdAt, updated_at AS updatedAt FROM comments WHERE id=:id;'));
 
         $service = new CommentsService($dbConnection);
 
@@ -247,8 +247,8 @@ final class CommentsServiceTest extends TestCase
         $service->update(1, $input, $updateDate);
     }
 
-    private function expectedRow($id): array
+    private function expectedComment($id): object
     {
-        return ['id' => $id, 'text' => 'phpunit text', 'author' => 'phpunit author', 'created_at' => date(DatabaseConnector::DATE_FORMAT), 'updated_at' => date(DatabaseConnector::DATE_FORMAT)];
+        return Comment::newInstance($id, 'phpunit text', 'phpunit author', date(DatabaseConnector::DATE_FORMAT), date(DatabaseConnector::DATE_FORMAT));
     }
 }

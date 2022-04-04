@@ -9,6 +9,8 @@ final class ApiResponse
     public const STATUS_SERVER_ERROR = 500;
     public const STATUS_BAD_REQUEST = 400;
 
+    public const HEADER_CONTENT_TYPE_JSON = 'Content-Type: application/json; charset=UTF-8';
+
 
     private $status;
     private $body;

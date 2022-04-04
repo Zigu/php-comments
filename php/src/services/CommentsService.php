@@ -14,26 +14,20 @@ final class CommentsService
 
     public function findAll(): array
     {
-        $statement = "SELECT id, text, author, created_at, updated_at FROM comments ORDER BY updated_at DESC;";
+        $statement = "SELECT id, text, author, created_at AS createdAt, updated_at AS updatedAt FROM comments ORDER BY updated_at DESC;";
         $query = $this->dbConnection->query($statement);
-        $rows = $query->fetchAll(PDO::FETCH_ASSOC);
-        $result = [];
-        foreach ($rows as $row)
-        {
-            $result[] = Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
-        }
-        return $result;
+        return $query->fetchAll(PDO::FETCH_CLASS, Comment::class);
     }
 
     public function findById(int $id): ?Comment
     {
-        $statement = "SELECT id, text, author, created_at, updated_at FROM comments WHERE id=:id;";
+        $statement = "SELECT id, text, author, created_at AS createdAt, updated_at AS updatedAt FROM comments WHERE id=:id;";
 
         $preparedStatement = $this->dbConnection->prepare($statement);
         $preparedStatement->bindParam('id', $id, PDO::PARAM_INT);
         $preparedStatement->execute();
-        $row = $preparedStatement->fetch(PDO::FETCH_ASSOC);
-        return !$row ? null : Comment::newInstance(intval($row['id']), $row['text'], $row['author'], $row['created_at'], $row['updated_at']);
+        $row = $preparedStatement->fetchObject(Comment::class);
+        return !$row ? null : $row;
     }
 
     public function deleteById(int $id): void

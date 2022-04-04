@@ -9,7 +9,7 @@ final class ResponseRenderer
     public static function render(ApiResponse $response): void
     {
         self::renderStatus($response->getStatus());
-        if ($response->getHeaders !== null)
+        if ($response->getHeaders() !== null)
         {
             foreach($response->getHeaders() as $header)
             {
