@@ -45,6 +45,7 @@ export DB_PASSWORD=<db user password>
 - copy all files located in `php/src` to your webapps folder (e.g. /var/www/html/ on Apache)
 - ensure that your webserver provides URL rewriting (e.g. enable `mod_rewrite` on Apache) and 
 respects the `.htaccess` file provided in the webapps folder
+- ensure that the following PHP extensions are installed: `pdo`and `pdo_mysql`
 - for web view, open browser http://\<your webapp\>
 - for calling the API directly (e.g. via curl), use http://\<your webapp\>/comments
 
