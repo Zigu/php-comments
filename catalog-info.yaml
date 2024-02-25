@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pincservices-php-comments
+  title: PHP comments Service
+  description: CRUD API service to manage comments. Was a sample project for a coding challenge.
+  tags:
+    - PHP
+spec:
+  type: service
+  owner: user:zigu
+  lifecycle: experimental
+  
