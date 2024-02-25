@@ -5,7 +5,7 @@ metadata:
   title: PHP comments Service
   description: CRUD API service to manage comments. Was a sample project for a coding challenge.
   tags:
-    - PHP
+    - php
 spec:
   type: service
   owner: user:zigu
